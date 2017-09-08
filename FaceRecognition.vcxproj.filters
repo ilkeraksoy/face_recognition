@@ -33,6 +33,9 @@
     <ClCompile Include="PersonRecognizer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EyeDetector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Defines.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PersonRecognizer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EyeDetector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

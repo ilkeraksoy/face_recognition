@@ -7,10 +7,12 @@
 #define WRITE_OUTPUT
 
 //Inputs
-#define CASCADE_PATH	    "cascades/haarcascade_frontalface_default.xml"
-#define INPUT_VIDEO_PATH	"input_video/Ibrahimovic.mp4"
-#define FACES_LIST_PATH		"faces/list.txt"
-#define DICTIONARY_PATH	    "faces/dictionary.txt"
+#define FACE_CASCADE_PATH		"cascades/haarcascade_frontalface_default.xml"
+#define LEFT_EYE_CASCADE_PATH   "cascades/haarcascade_mcs_lefteye.xml"
+#define RIGHT_EYE_CASCADE_PATH  "cascades/haarcascade_mcs_righteye.xml"
+#define INPUT_VIDEO_PATH		"input_video/Obama.mp4"
+#define FACES_LIST_PATH			"faces/list.txt"
+#define DICTIONARY_PATH			"faces/dictionary.txt"
 
 //Input video
 #define START_FRAME  -1
@@ -38,18 +40,28 @@
 #define POS_LINK          cvPoint(10, 55)
 
 //Face detector
-#define DETECT_SCALE_FACTOR   1.05
-#define DETECT_MIN_NEIGHBORS  40
-#define DETECT_MIN_SIZE		  Size(10,10)
-#define DETECT_MAX_SIZE		  Size()
-#define DETECT_MODE		      0 //CV_HAAR_DO_CANNY_PRUNING //0    //CASCADE_SCALE_IMAGE //CASCADE_FIND_BIGGEST_OBJECT	
+#define FACE_DETECT_SCALE_FACTOR   1.05
+#define FACE_DETECT_MIN_NEIGHBORS  40
+#define FACE_DETECT_MIN_SIZE		  Size(10,10)
+#define FACE_DETECT_MAX_SIZE		  Size()
+#define FACE_DETECT_MODE		      0 //CV_HAAR_DO_CANNY_PRUNING //0    //CASCADE_SCALE_IMAGE //CASCADE_FIND_BIGGEST_OBJECT	
+
+//Eye detector
+#define EYE_DETECT_SCALE_FACTOR   1.05
+#define EYE_DETECT_MIN_NEIGHBORS  40
+#define EYE_DETECT_MIN_SIZE		  Size(2,2)
+#define EYE_DETECT_MAX_SIZE		  Size(50,50)
+#define EYE_SX				      0.10
+#define EYE_SY                    0.19
+#define EYE_SW                    0.40
+#define EYE_SH                    0.36
 
 //LBPH face recognizer
 #define LBPH_RADIUS    3
 #define LBPH_NEIGHBORS 8
 #define LBPH_GRID_X    8
 #define LBPH_GRID_Y    8
-#define LBPH_THRESHOLD 90
+#define LBPH_THRESHOLD 94
 #define FACE_SIZE      Size(150,150)
 
 //Windows

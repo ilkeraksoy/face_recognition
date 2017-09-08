@@ -54,6 +54,26 @@ void ObjectDetector::detectObjects(const Mat &image, vector<Rect> &objects, int 
 		minSize, maxSize);
 }
 
+bool ObjectDetector::detectLargestObject(const Mat &image, Point &center) {
+
+	vector<Rect> objects;
+
+	detectObjects(image, objects, CASCADE_FIND_BIGGEST_OBJECT);
+
+	if (objects.size() > 0) {
+
+		center = Point(objects[0].x + objects[0].width / 2, objects[0].y + objects[0].height / 2);
+
+		return true;
+	}
+	else {
+
+		center = Point(-1, -1);
+
+		return false;
+	}
+}
+
 void ObjectDetector::detectLargestObject(const Mat &image, Rect &object) {
 
 	vector<Rect> objects;

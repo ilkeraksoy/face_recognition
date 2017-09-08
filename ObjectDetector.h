@@ -33,6 +33,7 @@ public:
 	virtual ~ObjectDetector();
 
 	void detectObjects(const Mat &image, vector<Rect> &objects, int detectMode);
+	bool detectLargestObject(const Mat &image, Point &center);
 	void detectLargestObject(const Mat &image, Rect &object);
 	void detectLargestObject(const Mat &image, Rect &object, Point &center);
 };

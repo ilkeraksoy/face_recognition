@@ -1,3 +1,4 @@
+#include "EyeDetector.h"
 #include "FaceDetector.h"
 #include "FrameReader.h"
 #include "FrameWriter.h"
@@ -17,14 +18,17 @@ using namespace cv;
 
 int main(int argc, char **argv) {
 
-	FrameReader fr(INPUT_VIDEO_PATH);
+	FrameReader fr(0);
 	Size frameSize(fr.getFrameSize());
 
 #ifdef WRITE_OUTPUT
 	FrameWriter fw(OUTPUT_VIDEO_PATH, OUTPUT_VIDEO_FPS, frameSize, OUTPUT_VIDEO_FOURCC);
 #endif
 
-	FaceDetector fd(CASCADE_PATH, DETECT_SCALE_FACTOR, DETECT_MIN_NEIGHBORS, DETECT_MIN_SIZE, DETECT_MAX_SIZE);
+	FaceDetector fd(FACE_CASCADE_PATH, FACE_DETECT_SCALE_FACTOR, FACE_DETECT_MIN_NEIGHBORS, FACE_DETECT_MIN_SIZE, FACE_DETECT_MAX_SIZE);
+	EyeDetector le(LEFT_EYE_CASCADE_PATH, EYE_DETECT_SCALE_FACTOR, EYE_DETECT_MIN_NEIGHBORS, EYE_DETECT_MIN_SIZE, EYE_DETECT_MAX_SIZE);
+	EyeDetector re(RIGHT_EYE_CASCADE_PATH, EYE_DETECT_SCALE_FACTOR, EYE_DETECT_MIN_NEIGHBORS, EYE_DETECT_MIN_SIZE, EYE_DETECT_MAX_SIZE);
+
 
 	vector<Mat> faces;
 	vector<int> labels;
@@ -48,48 +52,68 @@ int main(int argc, char **argv) {
 
 		for (vector<Rect>::const_iterator face_r = faces_r.begin(); face_r != faces_r.end(); face_r++) {
 
-			Scalar color = NO_MATCH_COLOR;
 			Mat face_image = f(*face_r);
 
-			cvtColor(face_image, face_image, CV_BGR2GRAY);
-			equalizeHist(face_image, face_image);
 
-			resize(face_image, face_image, FACE_SIZE, 1.0, 1.0, INTER_CUBIC);
+			int leftX = cvRound(face_image.cols * EYE_SX);
+			int topY = cvRound(face_image.rows * EYE_SY);
+			int widthX = cvRound(face_image.cols * EYE_SW);
+			int heightY = cvRound(face_image.rows * EYE_SH);
+			int rightX = cvRound(face_image.cols * (1.0 - EYE_SX - EYE_SW));
+			Mat topLeftOfFace = face_image(Rect(leftX, topY, widthX,
+				heightY));
+			Mat topRightOfFace = face_image(Rect(rightX, topY, widthX,
+				heightY));
 
-			Point center_ellipse(75, 75);
+			Point leftEye, rightEye;
 
-			Mat whiteImage(FACE_SIZE, CV_8UC1, Scalar(0, 0, 0));
+			if (le.detectEye(topLeftOfFace, leftEye) && re.detectEye(topRightOfFace, rightEye)) {
 
-			cv::ellipse(whiteImage, center_ellipse, Size(75 - 8, 75), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
+				circle(topLeftOfFace, leftEye, 2, Scalar(255, 0, 0), 1, LINE_TYPE, 0);
+				circle(topRightOfFace, rightEye, 2, Scalar(255, 0, 0), 1, LINE_TYPE, 0);
 
-			Mat res;
-			bitwise_and(face_image, whiteImage, res);
+				cvtColor(face_image, face_image, CV_BGR2GRAY);
+				equalizeHist(face_image, face_image);
+
+				resize(face_image, face_image, FACE_SIZE, 1.0, 1.0, INTER_CUBIC);
+
+				Point center_ellipse(75, 75);
+
+				Mat whiteImage(FACE_SIZE, CV_8UC1, Scalar(0, 0, 0));
+
+				cv::ellipse(whiteImage, center_ellipse, Size(75 - 8, 75), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
+
+				Mat res;
+				bitwise_and(face_image, whiteImage, res);
 
 #ifdef SHOW_DETECTED_FACE
-			imshow(MINI_WINDOW_NAME, res);
+				imshow(MINI_WINDOW_NAME, res);
 #endif
 
-			double confidence = 0;
-			bool face_match = false;
-			int prediction;
-			string personName;
+				double confidence = 0;
+				bool face_match = false;
+				int prediction;
+				string personName;
 
-			if (pr.recognize(res, personName, confidence)) {
+				Scalar color = NO_MATCH_COLOR;
 
-				color = MATCH_COLOR;
-				has_match = true;
-				face_match = true;
-				match_conf = confidence;
+				if (pr.recognize(res, personName, confidence)) {
+
+					color = MATCH_COLOR;
+					has_match = true;
+					face_match = true;
+					match_conf = confidence;
+				}
+
+
+
+
+				Point center(face_r->x + face_r->width * 0.5, face_r->y + face_r->height * 0.5);
+				circle(f, center, FACE_RADIUS_RATIO * face_r->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
+
+				//Point text(face_r->x + face_r->width / 4, face_r->y - 2);
+				//putText(f, personName, text, FONT_HERSHEY_PLAIN, 1.5, color, 1.5, CV_AA);
 			}
-
-
-
-
-			Point center(face_r->x + face_r->width * 0.5, face_r->y + face_r->height * 0.5);
-			circle(f, center, FACE_RADIUS_RATIO * face_r->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
-
-			Point text(face_r->x, face_r->y - face_r->height * 0.3);
-			putText(f, personName, text, FONT_HERSHEY_PLAIN, 1.5, color, 1.5, CV_AA);
 		}
 
 
@@ -100,9 +124,6 @@ int main(int argc, char **argv) {
 			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
 
 		putText(f, format("Frame: %d", c), cvPoint(10, f.rows - 80),
-			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
-
-		putText(f, format("Faces: %d", faces_r.size()), cvPoint(10, f.rows - 55),
 			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
 
 		putText(f, format("Match: %s", has_match ? "True" : "False"), cvPoint(10, f.rows - 30),
