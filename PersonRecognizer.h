@@ -26,8 +26,8 @@ private:
 public:
 
 	PersonRecognizer(vector<Mat> &faces_empty, vector<int> &labels_empty,
-		const string &facesListPath, const string &dictionaryPath, int radius, int neighbors,
-		int grid_x, int grid_y, double threshold);
+		const string &facesListPath, const string &dictionaryPath, int radius = 3, int neighbors = 8,
+		int grid_x = 8, int grid_y = 8, double threshold = 90);
 	~PersonRecognizer();
 
 	void train(vector<Mat> &faces_empty, vector<int> &labels_empty);

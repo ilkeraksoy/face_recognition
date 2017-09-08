@@ -17,7 +17,7 @@ using namespace cv;
 
 int main(int argc, char **argv) {
 
-	FrameReader fr(INPUT_VIDEO_PATH, START_FRAME, END_FRAME, FRAMES_DELTA);
+	FrameReader fr(INPUT_VIDEO_PATH);
 	Size frameSize(fr.getFrameSize());
 
 #ifdef WRITE_OUTPUT
@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 
 	vector<Mat> faces;
 	vector<int> labels;
-	PersonRecognizer pr(faces, labels, FACES_LIST_PATH, DICTIONARY_PATH, LBPH_RADIUS, LBPH_RADIUS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
+	PersonRecognizer pr(faces, labels, FACES_LIST_PATH, DICTIONARY_PATH, LBPH_RADIUS, LBPH_NEIGHBORS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
 
 	vector<Rect> faces_r;
 	Mat f;
@@ -56,34 +56,21 @@ int main(int argc, char **argv) {
 
 			resize(face_image, face_image, FACE_SIZE, 1.0, 1.0, INTER_CUBIC);
 
-			//int edge_size = max(face->width, face->height);
-
-			//Rect square(face->x, face->y, edge_size, edge_size);	
-
-			//Point center_ellipse(face->width * 0.5, face->height * 0.5);
-
 			Point center_ellipse(75, 75);
 
-			//Mat whiteImage(face->width, face->height, CV_8UC1, Scalar(0, 0, 0));
-
 			Mat whiteImage(FACE_SIZE, CV_8UC1, Scalar(0, 0, 0));
-
-
-			//cv::ellipse(whiteImage, center_ellipse, Size(face->width / 2 - 8, face->height / 2), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
 
 			cv::ellipse(whiteImage, center_ellipse, Size(75 - 8, 75), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
 
 			Mat res;
 			bitwise_and(face_image, whiteImage, res);
 
-			//resize(res, res, FACE_SIZE);	
-
 #ifdef SHOW_DETECTED_FACE
 			imshow(MINI_WINDOW_NAME, res);
 #endif
 
 			double confidence = 0;
-			//bool face_match = false;
+			bool face_match = false;
 			int prediction;
 			string personName;
 
@@ -91,7 +78,7 @@ int main(int argc, char **argv) {
 
 				color = MATCH_COLOR;
 				has_match = true;
-				//face_match = true;
+				face_match = true;
 				match_conf = confidence;
 			}
 
@@ -134,5 +121,6 @@ int main(int argc, char **argv) {
 
 	}
 
-	exit(0);
+	destroyAllWindows();
+	return 0;
 }

@@ -25,7 +25,7 @@
 //Colors, fonts, lines...
 #define NO_MATCH_COLOR    Scalar(0, 0, 255)
 #define MATCH_COLOR       Scalar(0, 255, 0)
-#define FACE_RADIUS_RATIO 0.75
+#define FACE_RADIUS_RATIO 0.5
 #define CIRCLE_THICKNESS  2.5
 #define LINE_TYPE         CV_AA
 #define FONT              FONT_HERSHEY_PLAIN
@@ -49,7 +49,7 @@
 #define LBPH_NEIGHBORS 8
 #define LBPH_GRID_X    8
 #define LBPH_GRID_Y    8
-#define LBPH_THRESHOLD 65
+#define LBPH_THRESHOLD 90
 #define FACE_SIZE      Size(150,150)
 
 //Windows

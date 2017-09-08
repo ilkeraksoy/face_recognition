@@ -13,7 +13,7 @@ PersonRecognizer::PersonRecognizer(vector<Mat> &faces_empty, vector<int> &labels
 
 	faceSize = Size(150, 150);
 
-	model = LBPHFaceRecognizer::create(radius = 1, neighbors = 8, grid_x = 8, grid_y = 8, threshold = 120);
+	model = LBPHFaceRecognizer::create(radius, neighbors, grid_x, grid_y, threshold);
 
 	train(faces_empty, labels_empty);
 }
@@ -32,18 +32,22 @@ bool PersonRecognizer::recognize(const Mat &face, string &person, double &confid
 
 	Mat face_gray;
 
-	if (face.channels() == 3) {
+	//int a = face.channels();
 
-		cvtColor(face, face_gray, CV_BGR2GRAY);
-	}
-	else if (face.channels() == 4) {
+	//if (face.channels() == 3) {
 
-		cvtColor(face, face_gray, CV_BGRA2GRAY);
-	}
-	else {
+	//	cvtColor(face, face_gray, CV_BGR2GRAY);
+	//}
+	//else if (face.channels() == 4) {
 
-		face_gray = face;
-	}
+	//	cvtColor(face, face_gray, CV_BGRA2GRAY);
+	//}
+	//else {
+
+	//	face_gray = face;
+	//}
+
+	face_gray = face;
 
 	equalizeHist(face_gray, face_gray);
 
