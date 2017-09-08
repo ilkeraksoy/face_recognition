@@ -1,239 +1,138 @@
+#include "FaceDetector.h"
+#include "FrameReader.h"
+#include "FrameWriter.h"
+#include "PersonRecognizer.h"
+#include "Defines.h"
+
 #include <iostream>
 #include <fstream>
-#include <sstream>
 
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/core.hpp"
-#include "opencv2/objdetect.hpp"
-#include "opencv2/face.hpp"
-
+#include <opencv2\core.hpp>
+#include <opencv2\highgui.hpp>
+#include <opencv2\imgproc.hpp>
+#include <opencv2\objdetect.hpp>
 
 using namespace std;
 using namespace cv;
-using namespace cv::face;
 
-void read_csv(string &fileName, vector<Mat> &images, vector<int> &labels, char seperator);
-string matchId(string &fileName, int &label_id);
-void readFromVideoFile(int, string, string, string, string, string);
+int main(int argc, char **argv) {
 
+	FrameReader fr(INPUT_VIDEO_PATH, START_FRAME, END_FRAME, FRAMES_DELTA);
+	Size frameSize(fr.getFrameSize());
 
-int main(int argc, char *argv[]) {
+#ifdef WRITE_OUTPUT
+	FrameWriter fw(OUTPUT_VIDEO_PATH, OUTPUT_VIDEO_FPS, frameSize, OUTPUT_VIDEO_FOURCC);
+#endif
 
-	readFromVideoFile(argc, argv[0], argv[1], argv[2], argv[3], argv[4]);
+	FaceDetector fd(CASCADE_PATH, DETECT_SCALE_FACTOR, DETECT_MIN_NEIGHBORS, DETECT_MIN_SIZE, DETECT_MAX_SIZE);
 
-	system("PAUSE");
-
-	return 0;
-}
-
-
-
-//read csv file
-void read_csv(string &fileName, vector<Mat> &images, vector<int> &labels, char seperator = ';') {
-
-	ifstream file(fileName.c_str(), ios::in);
-
-	if (!file) {
-
-		string message_error = "No valid input file was given, please check the given filename.";
-		CV_Error(CV_StsBadArg, message_error);
-
-
-	}
-
-	string line, path, classLabel;
-
-
-	while (getline(file, line)) {
-
-		stringstream lines(line);
-
-		getline(lines, path, seperator);
-		getline(lines, classLabel);
-
-		if (!path.empty() && !classLabel.empty()) {
-
-			Mat image = imread(path, CV_LOAD_IMAGE_GRAYSCALE);
-			//equalizeHist(image,image);
-
-			images.push_back(image);
-			labels.push_back(atoi(classLabel.c_str()));
-		}
-	}
-
-	file.close();
-}
-
-
-//match returned label
-string matchId(string &fileName, int &label_id) {
-
-	ifstream file(fileName.c_str(), ios::in);
-
-	string line, id, name;
-
-	while (getline(file, line)) {
-
-		stringstream lines(line);
-
-		getline(lines, id, ';');
-		getline(lines, name);
-
-		if (id.compare(to_string(label_id)) == 0) {
-
-			file.close();
-			return name;
-		}
-
-	}
-
-	return "Unknown Person";
-}
-
-void readFromVideoFile(int argc, string argv0, string argv1, string argv2, string argv3, string argv4) {
-
-	if (argc != 5) {
-
-		cout << "Usage: " << argv0 << " <haarcascade_file> <csv_file> <dictionary_file> <video_file>" << endl;
-		exit(1);
-	}
-
-
-
-	//    string fileName_haarcascade=string(argv[1]);
-	//    string fileName_csv=string(argv[2]);
-	//    int deviceID=atoi(argv[3]);
-
-	//required files directories
-	string fileName_haarcascade = argv1;
-	string fileName_csv = argv2;
-	string fileName_dictionary = argv3;
-	string fileName_video = argv4;
-
-	//empty vectors for faces and labels
-	vector<Mat> images_input;
+	vector<Mat> faces;
 	vector<int> labels;
+	PersonRecognizer pr(faces, labels, FACES_LIST_PATH, DICTIONARY_PATH, LBPH_RADIUS, LBPH_RADIUS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
 
-	try {
+	vector<Rect> faces_r;
+	Mat f;
 
-		read_csv(fileName_csv, images_input, labels, ';');
-	}
-	catch (Exception &e) {
+	namedWindow(MAIN_WINDOW_NAME, WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	namedWindow(MINI_WINDOW_NAME, WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
 
-		cerr << "Error opening file: " << fileName_csv << ". Reason: " << e.msg << endl;
-		exit(1);
-	}
+	int c = START_FRAME == -1 ? 0 : START_FRAME - 1;
 
-	int width_images = images_input[0].cols;
-	int height_images = images_input[0].rows;
+	while (fr.getNext(f) && waitKey(20) != 27) {
 
-	//training
-	Ptr<FaceRecognizer> model = LBPHFaceRecognizer::create(1, 16, 8, 8, 160.0);
-	model->train(images_input, labels);
+		c++;
 
-	//haar cascade file
-	CascadeClassifier frontFace;
-	frontFace.load(fileName_haarcascade);
+		bool has_match = false;
+		double match_conf = 0;
+		fd.detectFaces(f, faces_r);
 
-	//video capture class instance
-	VideoCapture cap;
-	cap.open(fileName_video);
+		for (vector<Rect>::const_iterator face_r = faces_r.begin(); face_r != faces_r.end(); face_r++) {
 
-	if (!cap.isOpened()) {
+			Scalar color = NO_MATCH_COLOR;
+			Mat face_image = f(*face_r);
 
-		cerr << "Connection failed..!" << endl;
+			cvtColor(face_image, face_image, CV_BGR2GRAY);
+			equalizeHist(face_image, face_image);
 
-		exit(1);
-	}
-	else {
+			resize(face_image, face_image, FACE_SIZE, 1.0, 1.0, INTER_CUBIC);
 
-		cout << "Connection successful..." << endl;
+			//int edge_size = max(face->width, face->height);
 
-		//frame from camera
-		Mat frame, frame_gray;
+			//Rect square(face->x, face->y, edge_size, edge_size);	
 
-		//create window
-		namedWindow("FaceRecognition", WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-		namedWindow("DetectedFace", WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+			//Point center_ellipse(face->width * 0.5, face->height * 0.5);
 
-		//returned id
-		int prediction = -1;
+			Point center_ellipse(75, 75);
 
-		string predictionName;
+			//Mat whiteImage(face->width, face->height, CV_8UC1, Scalar(0, 0, 0));
 
-		//until press ESC
-		while (waitKey(20) != 27) {
-
-			//assign frame
-			cap >> frame;
+			Mat whiteImage(FACE_SIZE, CV_8UC1, Scalar(0, 0, 0));
 
 
-			//convert grayscale
-			cvtColor(frame, frame_gray, CV_BGR2GRAY);
+			//cv::ellipse(whiteImage, center_ellipse, Size(face->width / 2 - 8, face->height / 2), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
 
-			//histogram equalization
-			equalizeHist(frame_gray, frame_gray);
+			cv::ellipse(whiteImage, center_ellipse, Size(75 - 8, 75), 0, 0, 360, Scalar(255, 255, 255), -1, 8);
 
-			//found faces
-			vector<Rect_<int>> faces;
+			Mat res;
+			bitwise_and(face_image, whiteImage, res);
 
-			//face detection
-			frontFace.detectMultiScale(frame_gray, faces, 1.1, 30, cv::CASCADE_SCALE_IMAGE, Size(50, 50));
+			//resize(res, res, FACE_SIZE);	
 
-			//for each found face...
-			for (int i = 0; i<faces.size(); i++) {
+#ifdef SHOW_DETECTED_FACE
+			imshow(MINI_WINDOW_NAME, res);
+#endif
 
-				//face rectangle
-				Rect face_i = faces[i];
+			double confidence = 0;
+			//bool face_match = false;
+			int prediction;
+			string personName;
 
-				//copy face boundary submatrix
-				Mat face = frame_gray(face_i);
+			if (pr.recognize(res, personName, confidence)) {
 
-				//show it
-				imshow("DetectedFace", face);
-
-				//scaled face
-				Mat face_resized;
-
-				//scaling
-				resize(face, face_resized, Size(width_images, height_images), 1.0, 1.0, INTER_CUBIC);
-
-				//query face
-				prediction = model->predict(face_resized);
-
-				//match id for person name
-				predictionName = matchId(fileName_dictionary, prediction);
-
-				string text_rectangle = predictionName;
-
-				//draw ellipse around face
-				Point center(faces[i].x + faces[i].width / 2, faces[i].y + faces[i].height / 2);
-
-				ellipse(frame, center, Size(faces[i].width / 2, faces[i].height / 2),
-					0, 0, 360, CV_RGB(204, 0, 102), 4, 8, 0);
-
-
-				int position_x = max(face_i.tl().x, 0);
-
-				int position_y = max(face_i.tl().y - 2, 0);
-
-				//draw text
-				putText(frame, text_rectangle, Point(position_x, position_y), FONT_HERSHEY_PLAIN, 1.5, CV_RGB(0, 255, 0), 1.5, CV_AA);
-
+				color = MATCH_COLOR;
+				has_match = true;
+				//face_match = true;
+				match_conf = confidence;
 			}
 
-			//show frame
-			imshow("FaceRecognition", frame);
 
-			//char key = (char) waitKey(20);
 
-			//if(key==27)
-			//    break;
+
+			Point center(face_r->x + face_r->width * 0.5, face_r->y + face_r->height * 0.5);
+			circle(f, center, FACE_RADIUS_RATIO * face_r->width, color, CIRCLE_THICKNESS, LINE_TYPE, 0);
+
+			Point text(face_r->x, face_r->y - face_r->height * 0.3);
+			putText(f, personName, text, FONT_HERSHEY_PLAIN, 1.5, color, 1.5, CV_AA);
 		}
 
-		cap.release();
-		exit(EXIT_SUCCESS);
-	}
-}
 
+		putText(f, "Face Recognition Demo", POS_TITLE,
+			FONT, SCALE_TITLE, FONT_COLOR, THICKNESS_TITLE, LINE_TYPE);
+
+		putText(f, format("Faces: %d", faces_r.size()), cvPoint(10, f.rows - 55),
+			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
+
+		putText(f, format("Frame: %d", c), cvPoint(10, f.rows - 80),
+			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
+
+		putText(f, format("Faces: %d", faces_r.size()), cvPoint(10, f.rows - 55),
+			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
+
+		putText(f, format("Match: %s", has_match ? "True" : "False"), cvPoint(10, f.rows - 30),
+			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
+
+		putText(f, format("Confidence: %f", has_match ? match_conf : 0), cvPoint(10, f.rows - 5),
+			FONT, 2, FONT_COLOR, 1, LINE_TYPE);
+
+#ifdef WRITE_OUTPUT
+		FrameWriter fw(OUTPUT_VIDEO_PATH, OUTPUT_VIDEO_FPS, frameSize, OUTPUT_VIDEO_FOURCC);
+#endif
+
+#ifdef SHOW_OUTPUT
+		imshow(MAIN_WINDOW_NAME, f);
+#endif
+
+	}
+
+	exit(0);
+}

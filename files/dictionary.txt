@@ -1,5 +1,0 @@
-0;Hagi
-1;Ibrahimovic
-2;Messi
-3;Robben
-4;Suarez
