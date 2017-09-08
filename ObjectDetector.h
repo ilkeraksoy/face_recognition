@@ -32,9 +32,9 @@ public:
 		Size         maxSize);
 	virtual ~ObjectDetector();
 
-	void detectObjects(const Mat &image, vector<Rect> &objects, int detectMode);
+	bool detectObjects(const Mat &image, vector<Rect> &objects, int cascadeMode);
 	bool detectLargestObject(const Mat &image, Point &center);
-	void detectLargestObject(const Mat &image, Rect &object);
-	void detectLargestObject(const Mat &image, Rect &object, Point &center);
+	bool detectLargestObject(const Mat &image, Rect &object);
+	bool detectLargestObject(const Mat &image, Rect &object, Point &center);
 };
 #endif //OBJECT_DETECTOR

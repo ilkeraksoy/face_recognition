@@ -11,7 +11,7 @@
 using namespace std;
 using namespace cv;
 
-enum MODE { CAMERA_MODE, VIDEO_MODE };
+
 
 class FrameReader {
 
@@ -22,7 +22,9 @@ private:
 	int endFrame,
 		delta;
 
-	MODE CAPTURE_MODE = VIDEO_MODE;
+	const enum MODE { CAMERA_CAPTURE_MODE, VIDEO_CAPTURE_MODE };
+
+	MODE CAPTURE_MODE;
 
 public:
 

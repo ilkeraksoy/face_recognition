@@ -12,9 +12,11 @@ FrameWriter::FrameWriter(const string videoPath, double fps, Size frameSize, int
 }
 
 void FrameWriter::write(Mat& frame) {
+
 	videoWriter << frame;
 }
 
 FrameWriter::~FrameWriter() {
+
 	videoWriter.release();
 }

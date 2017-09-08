@@ -22,7 +22,7 @@
 //Output video
 #define OUTPUT_VIDEO_PATH   "Output.avi"
 #define OUTPUT_VIDEO_FPS    15
-#define OUTPUT_VIDEO_FOURCC CV_FOURCC('M','J','P','G')
+#define OUTPUT_VIDEO_FOURCC CV_FOURCC('M', 'J', 'P', 'G')
 
 //Colors, fonts, lines...
 #define NO_MATCH_COLOR    Scalar(0, 0, 255)
@@ -40,29 +40,36 @@
 #define POS_LINK          cvPoint(10, 55)
 
 //Face detector
-#define FACE_DETECT_SCALE_FACTOR   1.05
+#define FACE_DETECT_SCALE_FACTOR   1.02
 #define FACE_DETECT_MIN_NEIGHBORS  40
-#define FACE_DETECT_MIN_SIZE		  Size(10,10)
-#define FACE_DETECT_MAX_SIZE		  Size()
-#define FACE_DETECT_MODE		      0 //CV_HAAR_DO_CANNY_PRUNING //0    //CASCADE_SCALE_IMAGE //CASCADE_FIND_BIGGEST_OBJECT	
+#define FACE_DETECT_MIN_SIZE	   Size(10, 10)
+#define FACE_DETECT_MAX_SIZE	   Size(300, 300)
+#define FACE_DETECT_MODE		   0|CV_HAAR_SCALE_IMAGE   //0 //CV_HAAR_DO_CANNY_PRUNING //0    //CASCADE_SCALE_IMAGE //CASCADE_FIND_BIGGEST_OBJECT	
+
+//Face aligner
+#define FACE_ALIGN_DESIRED_LEFT_EYE_X  0.16
+#define FACE_ALIGN_DESIRED_LEFT_EYE_Y  0.14
+#define FACE_ALIGN_FACE_SIZE           Size(150, 150)
 
 //Eye detector
-#define EYE_DETECT_SCALE_FACTOR   1.05
+#define EYE_DETECT_SCALE_FACTOR   1.02
 #define EYE_DETECT_MIN_NEIGHBORS  40
-#define EYE_DETECT_MIN_SIZE		  Size(2,2)
-#define EYE_DETECT_MAX_SIZE		  Size(50,50)
+#define EYE_DETECT_MIN_SIZE		  Size(2, 2)
+#define EYE_DETECT_MAX_SIZE		  Size(50, 50)
 #define EYE_SX				      0.10
 #define EYE_SY                    0.19
 #define EYE_SW                    0.40
 #define EYE_SH                    0.36
 
 //LBPH face recognizer
+#define LBPH_NAME_FILE_PATH  "faces/names.txt"
+#define LBPH_YML_FILE_PATH   "faces/persons.yml"
 #define LBPH_RADIUS    3
 #define LBPH_NEIGHBORS 8
 #define LBPH_GRID_X    8
 #define LBPH_GRID_Y    8
-#define LBPH_THRESHOLD 94
-#define FACE_SIZE      Size(150,150)
+#define LBPH_THRESHOLD 90.0
+#define FACE_SIZE      Size(150, 150)
 
 //Windows
 #define MAIN_WINDOW_NAME "FaceRecognitionDemo"

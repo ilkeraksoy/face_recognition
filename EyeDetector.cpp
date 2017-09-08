@@ -1,12 +1,12 @@
 #include "EyeDetector.h"
 
-EyeDetector::EyeDetector() : ObjectDetector(
-	"cascades/haarcascade_frontalface_default.xml",
-	1.05,
-	45,
-	Size(2, 2),
-	Size(50, 50)
-) {}
+//EyeDetector::EyeDetector() : ObjectDetector(
+//	"cascades/haarcascade_frontalface_default.xml",
+//	1.02,
+//	40,
+//	Size(),
+//	Size(300, 300)
+//) {}
 
 EyeDetector::EyeDetector(
 	const string &cascadePath,
@@ -26,4 +26,14 @@ EyeDetector::~EyeDetector() {}
 bool EyeDetector::detectEye(const Mat &image, Point &center) {
 
 	return ObjectDetector::detectLargestObject(image, center);
+}
+
+bool EyeDetector::detectEye(const Mat &image, Rect &eye) {
+
+	return ObjectDetector::detectLargestObject(image, eye);
+}
+
+bool EyeDetector::detectEye(const Mat &image, Rect &eye, Point &center) {
+
+	return ObjectDetector::detectLargestObject(image, eye, center);
 }

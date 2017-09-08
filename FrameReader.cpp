@@ -2,7 +2,7 @@
 
 FrameReader::FrameReader(const int &cameraId) {
 
-	CAPTURE_MODE = CAMERA_MODE;
+	CAPTURE_MODE = CAMERA_CAPTURE_MODE;
 
 	capture.open(cameraId);
 
@@ -17,6 +17,8 @@ FrameReader::FrameReader(const int &cameraId) {
 
 FrameReader::FrameReader(const string &videoPath, int startFrame, int endFrame, int delta) :
 	endFrame(endFrame), delta(delta) {
+
+	CAPTURE_MODE = VIDEO_CAPTURE_MODE;
 
 	capture.open(videoPath);
 
@@ -38,7 +40,7 @@ FrameReader::~FrameReader() {
 
 bool FrameReader::getNext(Mat &frame) {
 
-	if (CAPTURE_MODE == VIDEO_MODE) {
+	if (CAPTURE_MODE == VIDEO_CAPTURE_MODE) {
 
 		if (delta != -1 && delta > 0)
 			capture.set(CV_CAP_PROP_POS_FRAMES, capture.get(CV_CAP_PROP_POS_FRAMES) + delta);

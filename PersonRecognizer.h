@@ -19,20 +19,21 @@ class PersonRecognizer {
 private:
 
 	Ptr<FaceRecognizer> model;
+	vector<string> personNames;
 	Size faceSize;
-	string facesListPath;
-	string dictionaryPath;
 
 public:
 
-	PersonRecognizer(vector<Mat> &faces_empty, vector<int> &labels_empty,
-		const string &facesListPath, const string &dictionaryPath, int radius = 3, int neighbors = 8,
+	PersonRecognizer(int radius = 3, int neighbors = 8,
 		int grid_x = 8, int grid_y = 8, double threshold = 90);
 	~PersonRecognizer();
 
-	void train(vector<Mat> &faces_empty, vector<int> &labels_empty);
+	void train(const string &facesListPath, vector<Mat> &faces_empty, vector<int> &labels_empty);
 	bool recognize(const Mat &face, string &person, double &confidence) const;
-	void readFacesList(vector<Mat> &faces_empty, vector<int> &labels_empty, char seperator = ';');
+	void load(const string &yml_file_path, const string &name_file_path);
+	void save(const string &file_path) const;
+	void readFacesList(const string &facesListPath, vector<Mat> &faces_empty, vector<int> &labels_empty, char seperator = ';');
+	void readPersonNames(const string &namesFilePath);
 	void matchLabel(const int &label, string &person) const;
 };
 #endif //PERSONRECOGNIZER_H

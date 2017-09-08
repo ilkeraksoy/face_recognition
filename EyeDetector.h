@@ -17,15 +17,17 @@ class EyeDetector :public ObjectDetector {
 
 public:
 
-	EyeDetector();
+	//EyeDetector();
 	EyeDetector(
 		const string &cascadePath,
-		double scaleFactor = 1.05,
+		double scaleFactor = 1.02,
 		int minNeighbors = 40,
-		Size minSize = Size(2, 2),
-		Size maxSize = Size(50, 50));
+		Size minSize = Size(),
+		Size maxSize = Size(300, 300));
 	~EyeDetector();
 
 	bool detectEye(const Mat &image, Point &center);
+	bool detectEye(const Mat &image, Rect &eye);
+	bool detectEye(const Mat &image, Rect &eye, Point &center);
 };
 #endif //EYEDETECTOR_H

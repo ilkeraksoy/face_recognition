@@ -29,36 +29,54 @@ ObjectDetector::ObjectDetector(
 
 ObjectDetector::~ObjectDetector() {}
 
-void ObjectDetector::detectObjects(const Mat &image, vector<Rect> &objects, int detectMode) {
+bool ObjectDetector::detectObjects(const Mat &image, vector<Rect> &objects, int cascadeMode) {
 
-	Mat image_gray;
+	Mat image_gray = image.clone();
 
-	if (image.channels() == 3) {
+	objects.clear();
 
-		cvtColor(image, image_gray, CV_BGR2GRAY);
+	if (image_gray.channels() == 3) {
+
+		cvtColor(image_gray, image_gray, CV_BGR2GRAY);
 	}
-	else if (image.channels() == 4) {
+	else if (image_gray.channels() == 4) {
 
-		cvtColor(image, image_gray, CV_BGRA2GRAY);
-	}
-	else {
-
-		image_gray = image;
+		cvtColor(image_gray, image_gray, CV_BGRA2GRAY);
 	}
 
 	equalizeHist(image_gray, image_gray);
 
-	objects.clear();
-
-	cascade.detectMultiScale(image_gray, objects, scaleFactor, minNeighbors, detectMode,
+	cascade.detectMultiScale(image_gray, objects, scaleFactor, minNeighbors, cascadeMode,
 		minSize, maxSize);
+
+	if (objects.size() > 0) {
+
+		return true;
+	}
+	else {
+
+		return false;
+	}
 }
 
 bool ObjectDetector::detectLargestObject(const Mat &image, Point &center) {
 
+	Mat image_gray = image.clone();
+
+	if (image_gray.channels() == 3) {
+
+		cvtColor(image_gray, image_gray, CV_BGR2GRAY);
+	}
+	else if (image_gray.channels() == 4) {
+
+		cvtColor(image_gray, image_gray, CV_BGRA2GRAY);
+	}
+
+	equalizeHist(image_gray, image_gray);
+
 	vector<Rect> objects;
 
-	detectObjects(image, objects, CASCADE_FIND_BIGGEST_OBJECT);
+	detectObjects(image_gray, objects, CASCADE_FIND_BIGGEST_OBJECT);
 
 	if (objects.size() > 0) {
 
@@ -74,36 +92,70 @@ bool ObjectDetector::detectLargestObject(const Mat &image, Point &center) {
 	}
 }
 
-void ObjectDetector::detectLargestObject(const Mat &image, Rect &object) {
+bool ObjectDetector::detectLargestObject(const Mat &image, Rect &object) {
+
+	Mat image_gray = image.clone();
+
+	if (image_gray.channels() == 3) {
+
+		cvtColor(image_gray, image_gray, CV_BGR2GRAY);
+	}
+	else if (image_gray.channels() == 4) {
+
+		cvtColor(image_gray, image_gray, CV_BGRA2GRAY);
+	}
+
+	equalizeHist(image_gray, image_gray);
 
 	vector<Rect> objects;
 
-	detectObjects(image, objects, CASCADE_FIND_BIGGEST_OBJECT);
+	detectObjects(image_gray, objects, CASCADE_FIND_BIGGEST_OBJECT);
 
 	if (objects.size() > 0) {
 
 		object = objects[0];
+
+		return true;
 	}
 	else {
 
 		object = Rect(-1, -1, -1, -1);
+
+		return false;
 	}
 }
 
-void ObjectDetector::detectLargestObject(const Mat &image, Rect &object, Point &center) {
+bool ObjectDetector::detectLargestObject(const Mat &image, Rect &object, Point &center) {
+
+	Mat image_gray = image.clone();
+
+	if (image_gray.channels() == 3) {
+
+		cvtColor(image_gray, image_gray, CV_BGR2GRAY);
+	}
+	else if (image_gray.channels() == 4) {
+
+		cvtColor(image_gray, image_gray, CV_BGRA2GRAY);
+	}
+
+	equalizeHist(image_gray, image_gray);
 
 	vector<Rect> objects;
 
-	detectObjects(image, objects, CASCADE_FIND_BIGGEST_OBJECT);
+	detectObjects(image_gray, objects, CASCADE_FIND_BIGGEST_OBJECT);
 
 	if (objects.size() > 0) {
 
 		object = objects[0];
 		center = Point(object.x + object.width / 2, object.y + object.height / 2);
+
+		return true;
 	}
 	else {
 
 		object = Rect(-1, -1, -1, -1);
 		center = Point(-1, -1);
+
+		return false;
 	}
 }
