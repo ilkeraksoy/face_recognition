@@ -29,9 +29,10 @@ public:
 	~PersonRecognizer();
 
 	void train(const string &facesListPath, vector<Mat> &faces_empty, vector<int> &labels_empty);
-	bool recognize(const Mat &face, string &person, double &confidence) const;
+	bool recognize(const Mat &face, int &label, string &person, double &confidence) const;
 	void load(const string &yml_file_path, const string &name_file_path);
 	void save(const string &file_path) const;
+	void getPersonNames(vector<string> &personNames);
 	void readFacesList(const string &facesListPath, vector<Mat> &faces_empty, vector<int> &labels_empty, char seperator = ';');
 	void readPersonNames(const string &namesFilePath);
 	void matchLabel(const int &label, string &person) const;

@@ -20,7 +20,7 @@ void PersonRecognizer::train(const string &facesListPath, vector<Mat> &faces_emp
 }
 
 
-bool PersonRecognizer::recognize(const Mat &face, string &person, double &confidence) const {
+bool PersonRecognizer::recognize(const Mat &face, int &label, string &person, double &confidence) const {
 
 	Mat face_gray = face.clone();
 
@@ -38,7 +38,6 @@ bool PersonRecognizer::recognize(const Mat &face, string &person, double &confid
 		resize(face_gray, face_gray, faceSize, 1.0, 1.0, INTER_CUBIC);
 	}
 
-	int label;
 	model->predict(face_gray, label, confidence);
 
 	matchLabel(label, person);
@@ -56,6 +55,16 @@ void PersonRecognizer::load(const string &yml_file_path, const string &name_file
 void PersonRecognizer::save(const string &file_path) const {
 
 	model->write(file_path);
+}
+
+void PersonRecognizer::getPersonNames(vector<string> &personNames) {
+
+	personNames.clear();
+
+	for (vector<string>::iterator name = this->personNames.begin(); name != this->personNames.end(); name++) {
+
+		personNames.push_back(*name);
+	}
 }
 
 void PersonRecognizer::readFacesList(const string &facesListPath, vector<Mat> &faces_empty, vector<int> &labels_empty, char seperator) {

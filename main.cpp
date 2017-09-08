@@ -1,59 +1,67 @@
 #include "Include.h"
 
 int main(int argc, char **argv) {
-
-	FrameReader fr(0);
+	
+	FrameReader fr(0);	
 	Size frameSize(fr.getFrameSize());
-
+	
 #ifdef WRITE_OUTPUT
 	FrameWriter fw(OUTPUT_VIDEO_PATH, OUTPUT_VIDEO_FPS, frameSize, OUTPUT_VIDEO_FOURCC);
 #endif
-
+	
 	FaceDetector fd(FACE_CASCADE_PATH, LEFT_EYE_CASCADE_PATH, RIGHT_EYE_CASCADE_PATH, FACE_DETECT_SCALE_FACTOR, FACE_DETECT_MIN_NEIGHBORS, FACE_DETECT_MIN_SIZE, FACE_DETECT_MAX_SIZE);
-
+	
 	FaceAligner fa(FACE_ALIGN_DESIRED_LEFT_EYE_X, FACE_ALIGN_DESIRED_LEFT_EYE_Y, FACE_ALIGN_FACE_SIZE);
-
+	
 	vector<Mat> faces;
 	vector<int> labels;
-	vector<string> persons_empty;
+	vector<string> personNames;
+	
 	PersonRecognizer pr(LBPH_RADIUS, LBPH_NEIGHBORS, LBPH_GRID_X, LBPH_GRID_Y, LBPH_THRESHOLD);
+	
 	pr.train(FACES_LIST_PATH, faces, labels);
-	pr.save("faces/persons.yml");
+	//pr.save("faces/persons.yml");
 	//pr.load(LBPH_YML_FILE_PATH, LBPH_NAME_FILE_PATH);
-
+	pr.getPersonNames(personNames);
+	
 	namedWindow(MAIN_WINDOW_NAME, WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
+	
+#ifdef SHOW_DETECTED_FACE
 	namedWindow(MINI_WINDOW_NAME, WINDOW_AUTOSIZE | WINDOW_FREERATIO | WINDOW_GUI_EXPANDED);
-
+#endif
+	
 	int c = START_FRAME == -1 ? 0 : START_FRAME - 1;
-
+	
 	vector<Rect> faces_r;
 	vector<Rect> leftEyes_r;
 	vector<Rect> rightEyes_r;
+	
 	Mat frame, frame_copy;
-
+	
 	while (fr.getNext(frame) && waitKey(20) != 27) {
-
+		
 		c++;
-
+		
 		frame.copyTo(frame_copy);
-
+		
 		bool has_match = false;
 		double match_conf = 0;
 		int numberOfFaces = 0;
-
+		
 		if (fd.detectFaces(frame_copy, faces_r, leftEyes_r, rightEyes_r)) {
-
+			
 			for (vector<Rect>::const_iterator face_r = faces_r.begin(), eyeL_r = leftEyes_r.begin(), eyeR_r = rightEyes_r.begin();
 				face_r != faces_r.end(); face_r++, eyeL_r++, eyeR_r++) {
-
+				
 				Mat face_image = frame_copy(*face_r).clone();
+				
 				numberOfFaces++;
-
+				
 				cvtColor(face_image, face_image, CV_BGR2GRAY);
-
+				
 				Point leftEyeOnFrame((*eyeL_r).x + (*eyeL_r).width / 2, (*eyeL_r).y + (*eyeL_r).height / 2);
 				Point rightEyeOnFrame((*eyeR_r).x + (*eyeR_r).width / 2, (*eyeR_r).y + (*eyeR_r).height / 2);
-
+				
 				circle(frame, Point((*eyeL_r).x + (*eyeL_r).width / 2, (*eyeL_r).y + (*eyeL_r).height / 2), 2, Scalar(0, 0, 255), 2, CV_AA);
 				circle(frame, Point((*eyeR_r).x + (*eyeR_r).width / 2, (*eyeR_r).y + (*eyeR_r).height / 2), 2, Scalar(0, 0, 255), 2, CV_AA);
 
@@ -62,11 +70,11 @@ int main(int argc, char **argv) {
 
 				//circle(face_image, leftEye, 2, Scalar(0, 0, 255), 2, CV_AA);
 				//circle(face_image, rightEye, 2, Scalar(0, 0, 255), 2, CV_AA);
-
+				
 				Mat aligned_face;
-
+				
 				fa.align(face_image, aligned_face, leftEye, rightEye);
-
+				
 				Mat leftFace, rightFace;
 
 				int leftX, leftY, rightX, rightY;
@@ -137,17 +145,17 @@ int main(int argc, char **argv) {
 				Mat final_face = Mat(filtered.size(), CV_8U, Scalar(128));
 				filtered.copyTo(final_face, mask);
 
-
 #ifdef SHOW_DETECTED_FACE
 				imshow(MINI_WINDOW_NAME, final_face);
 #endif
 
 				double confidence = 0;
 				bool face_match = false;
+				int label;
 				string personName;
 				Scalar color = NO_MATCH_COLOR;
 
-				if (pr.recognize(aligned_face, personName, confidence)) {
+				if (pr.recognize(aligned_face, label, personName, confidence)) {
 
 					color = MATCH_COLOR;
 					has_match = true;
@@ -163,7 +171,6 @@ int main(int argc, char **argv) {
 				//}
 			}
 		}
-
 
 		putText(frame, "Face Recognition Demo", POS_TITLE,
 			FONT, SCALE_TITLE, FONT_COLOR, THICKNESS_TITLE, LINE_TYPE);

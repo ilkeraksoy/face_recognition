@@ -22,11 +22,11 @@
 //Output video
 #define OUTPUT_VIDEO_PATH   "Output.avi"
 #define OUTPUT_VIDEO_FPS    15
-#define OUTPUT_VIDEO_FOURCC CV_FOURCC('M', 'J', 'P', 'G')
+#define OUTPUT_VIDEO_FOURCC CV_FOURCC('M', 'J', 'P', 'G') //codec
 
 //Colors, fonts, lines...
-#define NO_MATCH_COLOR    Scalar(0, 0, 255)
-#define MATCH_COLOR       Scalar(0, 255, 0)
+#define NO_MATCH_COLOR    Scalar(0, 0, 255) //red
+#define MATCH_COLOR       Scalar(0, 255, 0) //green
 #define FACE_RADIUS_RATIO 0.5
 #define CIRCLE_THICKNESS  2.5
 #define LINE_TYPE         CV_AA
@@ -68,7 +68,7 @@
 #define LBPH_NEIGHBORS 8
 #define LBPH_GRID_X    8
 #define LBPH_GRID_Y    8
-#define LBPH_THRESHOLD 90.0
+#define LBPH_THRESHOLD 100.0
 #define FACE_SIZE      Size(150, 150)
 
 //Windows
